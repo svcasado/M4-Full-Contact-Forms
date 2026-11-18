@@ -1,0 +1,23 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+form div {
+  margin-bottom: 12px;
+}
+
+label {
+  display: block;
+}
+
+input[type="checkbox"] + label {
+  display: inline;
+}
+
+.error {
+  color: #c00;
+  margin: 4px 0 0;
+}
