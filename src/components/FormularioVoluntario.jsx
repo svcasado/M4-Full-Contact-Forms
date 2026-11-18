@@ -1,15 +1,26 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { esquemaVoluntario } from "../schemas/voluntario";
+import { crearVoluntario } from "../services/voluntarios";
 
 function FormularioVoluntario() {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const queryClient = useQueryClient();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(esquemaVoluntario),
     defaultValues: { nombre: "", email: "", edad: "", turno: "", aceptaNormas: false },
   });
 
+  const mutacion = useMutation({
+    mutationFn: crearVoluntario,
+    onSuccess: () => {
+      reset();
+      queryClient.invalidateQueries({ queryKey: ["voluntarios"] });
+    },
+  });
+
   return (
-    <form onSubmit={handleSubmit((datos) => console.log(datos))} noValidate>
+    <form onSubmit={handleSubmit((datos) => mutacion.mutate(datos))} noValidate>
       <div>
         <label htmlFor="nombre">Nombre</label>
         <input
@@ -73,7 +84,12 @@ function FormularioVoluntario() {
         {errors.aceptaNormas && <p id="error-aceptaNormas" className="error" role="alert">{errors.aceptaNormas.message}</p>}
       </div>
 
-      <button>Registrarme</button>
+      <button disabled={mutacion.isPending}>
+        {mutacion.isPending ? "Registrando…" : "Registrarme"}
+      </button>
+
+      {mutacion.isError && <p role="alert">{mutacion.error.message}</p>}
+      {mutacion.isSuccess && <p role="status">¡Registro completado! Gracias por ayudar.</p>}
     </form>
   );
 }
